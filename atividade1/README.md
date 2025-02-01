@@ -43,6 +43,8 @@ Funcionalidades Implementadas:
 3. O botão B decrementa o número exibido na matriz de LEDs cada vez que for pressionado.
 4. Os LEDs WS2812 criam efeitos visuais representando números de 0 a 9.
 
+Essa lógica permite controlar a exibição na matriz de LEDs de forma precisa, sem efeitos indesejados causados pelo bouncing dos botões.
+
 Desenvolvedor:
  
 <table>
@@ -51,3 +53,4 @@ Desenvolvedor:
     </tr>
 </table>
 
+Link do video de apresentação: https://youtube.com/shorts/tgDF9LUEjmg?feature=share

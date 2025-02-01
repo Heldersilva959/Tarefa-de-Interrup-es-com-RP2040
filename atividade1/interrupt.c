@@ -6,12 +6,11 @@
 #include "hardware/clocks.h"
 #include "hardware/adc.h"
 #include "pico/bootrom.h"
-#include "hardware/pwm.h"
 
 //arquivo .pio
 #include "interrupt.pio.h"
 
-#define DEBOUNCE_DELAY 100 //  Definição do tempo de debounce (ajustado para 100ms)
+#define DEBOUNCE_DELAY 50 //  Definição do tempo de debounce (ajustado para 50ms)
 
 #define NUM_PIXELS 25 //número de LEDs
 
@@ -63,70 +62,70 @@ void get_led(bool R, bool G, bool B) {
 // Matriz representando os numeros em leds 5x5
 
 double numeros[10][25] = {
-{ // 0
+{ // desenho do numero 0
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0
 },
-{ // 1
+{ // desenho do numero 1
     0.0, 0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 1.0, 1.0, 0.0,
     0.0, 0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 1.0, 0.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0
 },
-{ // 2
+{ // desenho do numero 2
     0.0, 0.0, 1.0, 0.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0
 },
-{ // 3
+{ // desenho do numero 3
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 0.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 0.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0
 },
-{ // 4
+{ // desenho do numero 4
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 1.0, 0.0
 },
-{ // 5
+{ // desenho do numero 5
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 0.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 0.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0
 },
-{ // 6
+{ // desenho do numero 6
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 0.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0
 },
-{ // 7
+{ // desenho do numero 7
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 1.0, 0.0, 0.0,
     0.0, 0.0, 1.0, 0.0, 0.0
 },
-{ // 8
+{ // desenho do numero 8
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0
 },
-{ // 9
+{ // desenho do numero 9
     0.0, 1.0, 1.0, 1.0, 0.0,
     0.0, 1.0, 0.0, 1.0, 0.0,
     0.0, 1.0, 1.0, 1.0, 0.0,
@@ -151,7 +150,7 @@ void desenho_pio(double *desenho, uint32_t valor_led, PIO pio, uint sm, double r
 
     for (int16_t i = 0; i < NUM_PIXELS; i++) {
         // Define a cor vermelha para cada LED
-        valor_led = matrix_rgb(0.0, desenho[24 - i], 0.0); // Apenas o valor vermelho está ativo
+        valor_led = matrix_rgb(0.0, 0.1*desenho[24 - i], 0.0); // Apenas o valor vermelho está ativo com intensidade baixa
         pio_sm_put_blocking(pio, sm, valor_led); // Envia o valor para o LED
     }
 
@@ -201,18 +200,18 @@ uint offset, sm;
 void gpio_irq_handler(uint gpio, uint32_t events){
 
     uint32_t current_time = to_us_since_boot(get_absolute_time()); //captura tempo atual
-        if (current_time - last_time > DEBOUNCE_DELAY*2000){
-            last_time = current_time;
+        if (current_time - last_time > DEBOUNCE_DELAY){
+            last_time = current_time; // atualiza o tempo da ultima interrupção válida
             
             if (gpio == BTNA_PIN && contador < 9){ //se pressionar o botão A
-            contador++;
-            print_valor(contador, pio, sm);
-            printf("Contador = %i\n", contador);
+            contador++; // incrementa no contador
+            print_valor(contador, pio, sm); //mostra o valor numerico nos leds
+            printf("Contador = %i\n", contador); // imprime no terminal o valor do contador
             }   
             else if (gpio == BTNB_PIN && contador > 0){ //se pressionar o botão B
-            contador = contador - 1;
-            print_valor(contador, pio, sm);
-            printf("Contador = %i\n", contador);
+            contador-- ; //decrementa no contador
+            print_valor(contador, pio, sm); // mostra o valor numerico nos leds
+            printf("Contador = %i\n", contador); // imprime no terminal o valor do contador
             }
     }
     else{
